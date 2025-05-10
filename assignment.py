@@ -2,11 +2,11 @@ import os
 import torch
 import warnings
 
-# Critical fix for PyTorch meta tensor issues
+
 torch.classes.__path__ = []
 warnings.filterwarnings("ignore", category=UserWarning)
 
-# Force CPU usage for all tensor operations to prevent meta tensor issues
+
 if torch.cuda.is_available():
     torch.set_default_device('cpu')
 
@@ -34,12 +34,12 @@ ALLOWED_FILE_TYPES = [".txt", ".pdf", ".docx"]
 embeddings = HuggingFaceEmbeddings(
     model_name="all-MiniLM-L6-v2",
     model_kwargs={
-        "device": "cpu",  # Force CPU usage
-        "trust_remote_code": True,  # Add trust remote code
+        "device": "cpu",
+        "trust_remote_code": True,
     },
     encode_kwargs={
         "normalize_embeddings": True,
-        "batch_size": 8  # Lower batch size to avoid memory issues
+        "batch_size": 8 
     }
 )
 
@@ -47,24 +47,24 @@ def initialize_vector_store():
     """Handle vector store initialization with error handling"""
     documents = []
     
-    # Create documents directory if missing
+ 
     os.makedirs(DOCUMENTS_DIR, exist_ok=True)
     
-    # Check if documents directory is empty
+ 
     files_exist = False
     for filename in os.listdir(DOCUMENTS_DIR):
         if os.path.splitext(filename.lower())[1] in ALLOWED_FILE_TYPES:
             files_exist = True
             break
             
-    # If no documents exist, create a placeholder document
+
     if not files_exist:
         st.info("No documents found in the documents folder. Starting with an empty knowledge base.")
-        # Create a very small placeholder document so vector store can initialize
+ 
         documents = [Document(page_content="This is a placeholder document.", metadata={"source": "placeholder"})]
         return FAISS.from_documents(documents, embeddings)
     
-    # If we have documents, try to load them
+ 
     for filename in os.listdir(DOCUMENTS_DIR):
         filepath = os.path.join(DOCUMENTS_DIR, filename)
         file_ext = os.path.splitext(filename.lower())[1]
@@ -108,7 +108,7 @@ def initialize_vector_store():
 
 
 try:
-    # Check if both the directory and the index file exist
+ 
     if os.path.exists(VECTOR_STORE_PATH) and os.path.exists(os.path.join(VECTOR_STORE_PATH, "index.faiss")):
         try:
             vector_store = FAISS.load_local(
@@ -122,10 +122,10 @@ try:
             vector_store = initialize_vector_store()
             st.success("Created new vector store.")
     else:
-        # Create the vector_store directory if it doesn't exist
+   
         os.makedirs(VECTOR_STORE_PATH, exist_ok=True)
         
-        # Create a new vector store
+   
         vector_store = initialize_vector_store()
         st.success("Created new vector store.")
 except Exception as e:
@@ -134,26 +134,26 @@ except Exception as e:
 
 
 try:
-    # Multiple ways to get API key to make the app more robust
+
     try:
-        # First try to get from Streamlit secrets
+    
         GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-        st.success("Using API key from Streamlit secrets")
+        #st.success("Using API key from Streamlit secrets")
     except Exception:
         try:
             # Then try environment variable
             import os
             GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
             if GROQ_API_KEY:
-                st.success("Using API key from environment variable")
+                #st.success("Using API key from environment variable")
             else:
                 # Finally fallback to hardcoded key for development
-                GROQ_API_KEY = "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"
-                st.warning("Using fallback API key - for production, set in secrets or environment")
+                GROQ_API_KEY = "YOUR-API-KEY"
+               # st.warning("Using fallback API key - for production, set in secrets or environment")
         except Exception:
             # Last resort, use hardcoded key
-            GROQ_API_KEY = "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"
-            st.warning("Using fallback API key - for production, set in secrets or environment")
+            GROQ_API_KEY = "YOUR-API-KEY"
+            #st.warning("Using fallback API key - for production, set in secrets or environment")
     
     # Initialize the LLM with the API key we found
     llm = ChatGroq(
@@ -161,7 +161,8 @@ try:
         model=MODEL_NAME,     
         api_key=GROQ_API_KEY  
     )
-    st.success("Successfully initialized Groq client")
+    
+    #st.success("Successfully initialized Groq client")
 except Exception as e:
     st.error(f"Groq client initialization failed: {str(e)}")
     st.stop()
