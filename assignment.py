@@ -146,6 +146,7 @@ try:
             GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
             if GROQ_API_KEY:
                 #st.success("Using API key from environment variable")
+                pass;
             else:
                 # Finally fallback to hardcoded key for development
                 GROQ_API_KEY = "YOUR-API-KEY"
